@@ -1,65 +1,233 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useMemo } from 'react';
+import { useWizard, type WizardStep } from '@/hooks/useWizard';
+import { BackgroundStep } from '@/components/wizard/BackgroundStep';
+import { AccentStep } from '@/components/wizard/AccentStep';
+import { SystemAccentsStep } from '@/components/wizard/SystemAccentsStep';
+import { LivePreview } from '@/components/preview/LivePreview';
+import { ExportModal } from '@/components/export/ExportModal';
+import {
+  generateModePalette,
+  createAccentColor,
+  createSystemAccent,
+  checkContrast,
+} from '@/lib/color';
+
+const STEP_LABELS: Record<WizardStep, string> = {
+  background: 'Background',
+  accent: 'Accents',
+  system: 'System Colors',
+};
 
 export default function Home() {
+  const wizard = useWizard();
+  const [showExport, setShowExport] = useState(false);
+
+  // State
+  const [scale, setScale] = useState(5);
+  const [lightL0, setLightL0] = useState(100);
+  const [darkL0, setDarkL0] = useState(0);
+  const [primaryHue, setPrimaryHue] = useState(220);
+  const [showSecondary, setShowSecondary] = useState(false);
+  const [secondaryHue, setSecondaryHue] = useState(150);
+  const [systemAccents, setSystemAccents] = useState({
+    success: { hue: 145, name: 'success' },
+    warning: { hue: 85, name: 'warning' },
+    danger: { hue: 25, name: 'danger' },
+  });
+
+  // Generate palettes
+  const lightPalette = useMemo(
+    () => generateModePalette('light', lightL0, scale),
+    [lightL0, scale]
+  );
+
+  const darkPalette = useMemo(
+    () => generateModePalette('dark', darkL0, scale, lightPalette.levels),
+    [darkL0, scale, lightPalette.levels]
+  );
+
+  const lightPaletteWithText = useMemo(
+    () => generateModePalette('light', lightL0, scale, darkPalette.levels),
+    [lightL0, scale, darkPalette.levels]
+  );
+
+  const primaryAccent = useMemo(
+    () => createAccentColor('primary', primaryHue),
+    [primaryHue]
+  );
+
+  const secondaryAccent = useMemo(
+    () => (showSecondary ? createAccentColor('secondary', secondaryHue) : null),
+    [showSecondary, secondaryHue]
+  );
+
+  const successAccent = useMemo(
+    () => createSystemAccent('success', systemAccents.success.hue, systemAccents.success.name),
+    [systemAccents.success]
+  );
+
+  const warningAccent = useMemo(
+    () => createSystemAccent('warning', systemAccents.warning.hue, systemAccents.warning.name),
+    [systemAccents.warning]
+  );
+
+  const dangerAccent = useMemo(
+    () => createSystemAccent('danger', systemAccents.danger.hue, systemAccents.danger.name),
+    [systemAccents.danger]
+  );
+
+  // Contrast checks
+  const lightContrast = useMemo(
+    () => checkContrast(lightPaletteWithText.text.primary.oklch, lightPaletteWithText.levels.l0.oklch),
+    [lightPaletteWithText]
+  );
+
+  const darkContrast = useMemo(
+    () => checkContrast(darkPalette.text.primary.oklch, darkPalette.levels.l0.oklch),
+    [darkPalette]
+  );
+
+  const handleFinish = () => {
+    setShowExport(true);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="h-screen flex bg-[var(--app-bg)]">
+      {/* Left Panel - Wizard (60%) */}
+      <div className="w-[60%] flex flex-col border-r" style={{ borderColor: 'var(--app-border)' }}>
+        {/* Header */}
+        <header className="px-8 py-6 border-b" style={{ borderColor: 'var(--app-border)' }}>
+          <h1 className="text-2xl font-bold">Khaali Colours</h1>
+          <p className="text-sm text-[var(--app-text-muted)]">
+            OKLCH Color System Generator
           </p>
+        </header>
+
+        {/* Step Indicators - Horizontal */}
+        <nav className="px-8 py-4 border-b" style={{ borderColor: 'var(--app-border)' }}>
+          <div className="flex gap-3 max-w-2xl mx-auto">
+            {wizard.steps.map((step, index) => {
+              const isActive = wizard.currentStep === step;
+              const isCompleted = index < wizard.stepIndex;
+
+              return (
+                <button
+                  key={step}
+                  onClick={() => wizard.goTo(step)}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-[var(--app-accent)] text-white'
+                      : isCompleted
+                      ? 'bg-[var(--app-surface)] text-[var(--app-text)]'
+                      : 'bg-[var(--app-surface)] text-[var(--app-text-muted)]'
+                  }`}
+                  style={{ border: isActive ? 'none' : '1px solid var(--app-border)' }}
+                >
+                  <span
+                    className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-medium ${
+                      isActive
+                        ? 'bg-white/20 text-white'
+                        : isCompleted
+                        ? 'bg-[var(--app-accent)] text-white'
+                        : 'bg-[var(--app-border)] text-[var(--app-text-muted)]'
+                    }`}
+                  >
+                    {isCompleted ? '✓' : index + 1}
+                  </span>
+                  <span className="text-sm font-medium">{STEP_LABELS[step]}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* Step Content - Centered */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-2xl mx-auto px-8 py-8">
+            {wizard.currentStep === 'background' && (
+              <BackgroundStep
+                scale={scale}
+                onScaleChange={setScale}
+                lightL0={lightL0}
+                onLightL0Change={setLightL0}
+                darkL0={darkL0}
+                onDarkL0Change={setDarkL0}
+                onNext={wizard.next}
+              />
+            )}
+
+            {wizard.currentStep === 'accent' && (
+              <AccentStep
+                primaryHue={primaryHue}
+                onPrimaryHueChange={setPrimaryHue}
+                primaryAccent={primaryAccent}
+                showSecondary={showSecondary}
+                onShowSecondaryChange={setShowSecondary}
+                secondaryHue={secondaryHue}
+                onSecondaryHueChange={setSecondaryHue}
+                secondaryAccent={secondaryAccent}
+                onBack={wizard.back}
+                onNext={wizard.next}
+              />
+            )}
+
+            {wizard.currentStep === 'system' && (
+              <SystemAccentsStep
+                success={systemAccents.success}
+                warning={systemAccents.warning}
+                danger={systemAccents.danger}
+                successAccent={successAccent}
+                warningAccent={warningAccent}
+                dangerAccent={dangerAccent}
+                onSuccessChange={(config) =>
+                  setSystemAccents((s) => ({ ...s, success: config }))
+                }
+                onWarningChange={(config) =>
+                  setSystemAccents((s) => ({ ...s, warning: config }))
+                }
+                onDangerChange={(config) =>
+                  setSystemAccents((s) => ({ ...s, danger: config }))
+                }
+                onBack={wizard.back}
+                onFinish={handleFinish}
+              />
+            )}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
+
+      {/* Right Panel - Live Preview (40%) */}
+      <div className="w-[40%] p-6" style={{ background: 'var(--app-surface)' }}>
+        <LivePreview
+          lightPalette={lightPaletteWithText}
+          darkPalette={darkPalette}
+          primaryAccent={primaryAccent}
+          secondaryAccent={secondaryAccent}
+          successAccent={successAccent}
+          warningAccent={warningAccent}
+          dangerAccent={dangerAccent}
+          lightContrast={lightContrast}
+          darkContrast={darkContrast}
+          currentStep={wizard.currentStep}
+        />
+      </div>
+
+      {/* Export Modal */}
+      {showExport && (
+        <ExportModal
+          lightPalette={lightPaletteWithText}
+          darkPalette={darkPalette}
+          primaryAccent={primaryAccent}
+          secondaryAccent={secondaryAccent}
+          successAccent={successAccent}
+          warningAccent={warningAccent}
+          dangerAccent={dangerAccent}
+          scale={scale}
+          onClose={() => setShowExport(false)}
+        />
+      )}
     </div>
   );
 }

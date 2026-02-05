@@ -1,26 +1,202 @@
 @import "tailwindcss";
 
+/* Khaali Colours - Base Theme */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* App chrome colors (dark theme for the tool itself) */
+  --app-bg: oklch(8% 0 0);
+  --app-surface: oklch(12% 0 0);
+  --app-border: oklch(20% 0 0);
+  --app-text: oklch(90% 0 0);
+  --app-text-muted: oklch(60% 0 0);
+  --app-accent: oklch(65% 0.15 220);
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* Border radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-app-bg: var(--app-bg);
+  --color-app-surface: var(--app-surface);
+  --color-app-border: var(--app-border);
+  --color-app-text: var(--app-text);
+  --color-app-text-muted: var(--app-text-muted);
+  --color-app-accent: var(--app-accent);
+  --font-sans: var(--font-inter);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--app-bg);
+  color: var(--app-text);
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+/* Hue wheel styles */
+.hue-wheel {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    oklch(65% 0.15 0),
+    oklch(65% 0.15 30),
+    oklch(65% 0.15 60),
+    oklch(65% 0.15 90),
+    oklch(65% 0.15 120),
+    oklch(65% 0.15 150),
+    oklch(65% 0.15 180),
+    oklch(65% 0.15 210),
+    oklch(65% 0.15 240),
+    oklch(65% 0.15 270),
+    oklch(65% 0.15 300),
+    oklch(65% 0.15 330),
+    oklch(65% 0.15 360)
+  );
+  cursor: pointer;
+}
+
+.hue-wheel::after {
+  content: '';
+  position: absolute;
+  top: 25%;
+  left: 25%;
+  width: 50%;
+  height: 50%;
+  border-radius: 50%;
+  background: var(--app-surface);
+}
+
+.hue-wheel-indicator {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 4px rgba(0,0,0,0.5);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--app-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--app-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(30% 0 0);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 2px;
+}
+
+/* Button base */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  transition: all 150ms ease;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--app-accent);
+  color: oklch(10% 0 0);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+}
+
+.btn-secondary {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  color: var(--app-text);
+}
+
+.btn-secondary:hover {
+  background: var(--app-border);
+}
+
+/* Input base */
+input[type="number"],
+input[type="text"] {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  color: var(--app-text);
+  font-size: 0.875rem;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus {
+  border-color: var(--app-accent);
+}
+
+/* Wizard step indicator */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  transition: all 150ms ease;
+}
+
+.step-indicator.active {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+}
+
+.step-indicator.completed {
+  opacity: 0.7;
+}
+
+.step-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--app-border);
+}
+
+.step-indicator.active .step-number {
+  background: var(--app-accent);
+  color: oklch(10% 0 0);
+}
+
+.step-indicator.completed .step-number {
+  background: oklch(50% 0.12 145);
+  color: white;
 }
