@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc:*)",
-      "WebFetch(domain:ui.shadcn.com)"
+      "WebFetch(domain:ui.shadcn.com)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm vitest:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
