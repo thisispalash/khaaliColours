@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useColorContext } from '@/hooks/useColorContext';
-import { getSuggestedL0Options } from '@/lib/color/palette';
+import { getSuggestedL0Options } from '@/lib/color/palette-v2';
 
 export function BaseSelection() {
   const { scale, lightL0, setLightL0, darkL0, setDarkL0 } = useColorContext();

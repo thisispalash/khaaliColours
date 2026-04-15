@@ -1,85 +1,69 @@
-/**
- * Color Library - Main Export
- *
- * Khaali Colours OKLCH Color System Generator
- */
+// src/lib/color/index.ts
 
-// Core OKLCH utilities
+// Palette v2 (active)
 export {
-  createOklch,
-  createNeutral,
-  formatOklchCss,
-  toCuloriOklch,
-  fromCuloriOklch,
-  getLightness100,
-  clampLightness,
-  clampChroma,
-  normalizeHue,
-  isAchromatic,
-} from './oklch';
+  generateModePaletteV2,
+  generateChromaticAccent,
+  resolveAccents,
+  generateThemeV2,
+  formatOklchNone,
+  formatOklchHue,
+  clampScale,
+  getSuggestedL0Options,
+  SCALE_MIN,
+  SCALE_MAX,
+  MUTED_LIGHT_FLOOR,
+  MUTED_DARK_CEILING,
+  NEUTRAL_WITH_CHROMATIC,
+} from './palette-v2';
+export type {
+  NeutralTokenName,
+  NeutralToken,
+  ModePaletteV2,
+  ChromaticShadeLabel,
+  ChromaticShade,
+  ChromaticAccent,
+  ResolvedAccents,
+  ThemeV2Input,
+  ThemeV2,
+} from './palette-v2';
 
-// HSL utilities (sRGB fallback)
+// System colors
 export {
-  createHsl,
-  createNeutralHsl,
-  oklchToHsl,
-  formatHslCss,
-  isInSrgbGamut,
-  clampHsl,
-} from './hsl';
+  createSystemTriangle,
+  rotateTriangle,
+  getRestrictedRange,
+} from './system-colors';
+export type { SystemTriangle, SystemColorKey } from './system-colors';
+
+// CSS variable bridge
+export {
+  generateCssVariables,
+  generateShadcnVariables,
+  generateSystemCssVariables,
+} from './css-variables';
 
 // WCAG Contrast
 export {
-  WCAG_THRESHOLDS,
   getContrastRatio,
   checkContrast,
   formatContrastRatio,
   getRelativeLuminance,
-  suggestTextColor,
-  findContrastingLightness,
 } from './contrast';
 
-// Palette generation
+// Accents (still used for system accent generation)
 export {
-  generateLightnessSteps,
-  createNeutralStep,
-  generateNeutralSteps,
-  calculateLightModeLevels,
-  calculateDarkModeLevels,
-  calculateLightModeText,
-  calculateDarkModeText,
-  generateModePalette,
-  getSuggestedL0Options,
-} from './palette';
-
-// Accent colors
-export {
-  SYSTEM_ACCENT_DEFAULTS,
-  generateAccentShades,
-  generateSystemAccentShades,
-  createAccentColor,
   createSystemAccent,
-  getAccentShade,
-  getSystemAccentShade,
   generateDefaultSystemAccents,
-  validateAccentHarmony,
+  SYSTEM_ACCENT_DEFAULTS,
 } from './accents';
 
-// Re-export types
+// Re-export core types
 export type {
   OklchColor,
   HslColor,
-  NeutralStep,
-  ColorLevel,
-  TextColor,
-  ModePalette,
-  AccentShade,
-  AccentColor,
+  ContrastResult,
   SystemAccent,
   SystemAccentShade,
-  ColorPalette,
-  ContrastResult,
-  PaletteConfig,
-  ShadeLabel,
   SystemShadeLabel,
 } from '@/types/color';
