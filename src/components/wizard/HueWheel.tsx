@@ -58,13 +58,25 @@ export function HueWheel({
       const angle = Math.atan2(clientY - centerY, clientX - centerX);
       let hue = (angle * 180) / Math.PI + 90;
       if (hue < 0) hue += 360;
+      hue = Math.round(hue);
 
-      // Clamp to range if locked
       if (isRangeLocked) {
-        hue = Math.max(minHue, Math.min(maxHue, hue));
+        const min = minHue!;
+        const max = maxHue!;
+        const wraps = max < min;
+
+        const inRange = wraps
+          ? hue >= min || hue <= max
+          : hue >= min && hue <= max;
+
+        if (!inRange) {
+          const distToMin = Math.min(Math.abs(hue - min), 360 - Math.abs(hue - min));
+          const distToMax = Math.min(Math.abs(hue - max), 360 - Math.abs(hue - max));
+          hue = distToMin <= distToMax ? min : max;
+        }
       }
 
-      return Math.round(hue);
+      return hue;
     },
     [value, isRangeLocked, minHue, maxHue]
   );
@@ -111,13 +123,18 @@ export function HueWheel({
   const lineEndY = size / 2 + Math.sin(lineAngle) * outerRadius;
 
   // Generate gradient based on range
+  const arcDeg = isRangeLocked
+    ? ((maxHue! - minHue! + 360) % 360) || 360
+    : 360;
+
   const gradientStyle = isRangeLocked
     ? {
-        background: `conic-gradient(from ${minHue - 90}deg,
+        background: `conic-gradient(from ${minHue! - 90}deg,
           oklch(65% 0.2 ${minHue}),
-          oklch(65% 0.2 ${(minHue + maxHue) / 2}),
+          oklch(65% 0.2 ${minHue! + arcDeg / 2}),
           oklch(65% 0.2 ${maxHue}),
-          oklch(30% 0.05 0) ${maxHue - minHue}deg
+          transparent ${arcDeg}deg,
+          transparent 360deg
         )`,
       }
     : undefined;
