@@ -1,14 +1,15 @@
-# PRD: Khaali Colours — OKLCH Color System Generator
+# PRD: khaaliColors — OKLCH Color System Generator
 
 **Author:** Trent (via Claude)
 **Date:** 2026-02-04
-**Status:** Draft
+**Last Updated:** 2026-04-15
+**Status:** In Progress — Lighthouse Redesign merged, v2 palette math active
 
 ---
 
 ## Overview
 
-Khaali Colours is a web-based color system generator that helps designers and developers define consistent, accessible color palettes. The tool generates colors in the OKLCH color space for Display P3 gamut with automatic HSL fallbacks for sRGB compatibility. Built with Next.js 15, server-side rendered, ISR-compliant, and immediately deployable to Vercel.
+khaaliColors is a web-based color system generator that helps designers and developers define consistent, accessible color palettes. The tool generates colors in the OKLCH color space with automatic HSL fallbacks for sRGB compatibility. Built with Next.js 14, React 18, Tailwind CSS v4, and shadcn/ui. The app itself serves as the preview — real shadcn components consume the generated CSS variables natively.
 
 ---
 
@@ -16,13 +17,14 @@ Khaali Colours is a web-based color system generator that helps designers and de
 
 **Problem:** Defining a consistent, accessible color system for web projects is complex and error-prone. Designers must manually calculate color relationships, ensure contrast ratios meet WCAG guidelines, and maintain consistency across light/dark modes and accent colors.
 
-**Who:** Designers and developers building web applications who need a systematic approach to color.
+**Who:** Designers and developers building web applications who need a systematic approach to color — particularly those using shadcn/ui.
 
 **Evidence:**
 - Color systems require mathematical relationships (lightness scales, chroma consistency)
 - WCAG contrast compliance is frequently missed in manual color selection
 - Light/dark mode color relationships are non-trivial to calculate correctly
-- Modern browsers support Display P3, but fallbacks to sRGB are still required
+- Modern browsers support OKLCH, but fallbacks to sRGB are still required
+- shadcn/ui users need a way to generate coherent theme variables
 
 ---
 
@@ -30,18 +32,18 @@ Khaali Colours is a web-based color system generator that helps designers and de
 
 **Goals:**
 1. Generate complete neutral palettes from user-defined scale value
-2. Auto-calculate light/dark mode color relationships
-3. Generate accent color shades with consistent chroma/lightness
-4. Ensure all generated colors meet WCAG contrast guidelines
-5. Output Tailwind-compatible CSS with OKLCH (Display P3) and HSL (sRGB) fallbacks
+2. Auto-calculate independent light/dark mode color relationships
+3. Generate chromatic accent shades harmonized with neutral palette
+4. Provide real-time WCAG contrast feedback
+5. Output in 4 formats: CSS, Tailwind v4, JSON, and shadcn-compatible variables
 
 **Success Metrics:**
 
 | Metric | Target | Measurement |
 |--------|--------|-------------|
-| Color generation accuracy | 100% mathematical correctness | Unit tests for all calculations |
-| WCAG compliance | AA or AAA on all text/bg combinations | Automated contrast checking |
-| User task completion | Generate full palette in <2 minutes | User testing |
+| Color generation accuracy | 100% mathematical correctness | Unit tests (28 passing) |
+| WCAG compliance | AA or AAA on all text/bg combinations | Real-time hover contrast display |
+| User task completion | Generate full palette interactively | All controls in sidebar, no wizard steps |
 
 ---
 
@@ -50,22 +52,24 @@ Khaali Colours is a web-based color system generator that helps designers and de
 ### In Scope
 
 **Core Features:**
-1. Neutral palette generator with any user-defined scale (1-100)
-2. Light/dark mode color level calculations (L0, L1, L2, L3/muted)
-3. Text color derivation (primary, secondary, muted)
-4. Accent color generator (primary + optional secondary hue)
-5. System accent colors with customizable semantic names (success, warning, danger → user can rename)
-6. WCAG contrast ratio validation with persistent indicator
-7. OKLCH to HSL color conversion
-8. Tailwind-compatible CSS variable output (Display P3 + sRGB fallbacks)
-9. Live preview with sample components rendered using generated colors
+1. Neutral palette generator with scale clamped 2–13 (Fibonacci multiplier system)
+2. Independent light/dark mode token derivation (9 tokens per mode)
+3. Text color derivation via `opposite_base = 100 - base` (self-contained per theme)
+4. Chromatic accent generator (primary hue only, 6 shades at neutral lightness positions)
+5. System accent colors (success, warning, danger) linked as 60° equilateral triangle
+6. Real-time WCAG contrast display in sidebar (updates on hover)
+7. OKLCH to HSL color conversion via culori with gamut clamping
+8. Export in 4 formats: CSS variables, Tailwind v4, JSON, shadcn-compatible
+9. Live preview with real shadcn/ui primitive components in mosaic grid
 
 **Technical Stack:**
-- Next.js 15 with App Router (SSR, ISR-compliant, Vercel-deployable)
-- React 19+ (following Vercel best practices)
+- Next.js 14 with App Router
+- React 18
 - TypeScript
 - Tailwind CSS v4
-- Color math library (culori or similar for OKLCH/HSL conversions)
+- shadcn/ui (28 components installed)
+- culori (OKLCH/HSL conversions, gamut mapping)
+- vitest (28 tests passing)
 
 ### Out of Scope (v1)
 
@@ -73,81 +77,88 @@ Khaali Colours is a web-based color system generator that helps designers and de
 - Export to design tools (Figma, Sketch plugins)
 - Color blindness simulation
 - Brand color extraction from images
+- Mobile / responsive layout (desktop only)
+- Authentication and user button dropdown
+- Secondary chromatic accent (removed — primary only)
+- Semantic name renaming for system accents
+- Shareable URL with palette configuration
+- Pointer/touch events on HueWheel
 
 ---
 
-## Color System Specification
+## Color System Specification (v2)
 
 ### 1. Neutral Palette Generation
 
 **Color Space:** OKLCH (Oklab Lightness, Chroma, Hue)
-- Hue = 0 (neutral grays)
+- Neutrals format as `oklch(L% 0 none)` — explicit "no hue"
 - Chroma = 0 (achromatic)
 - Lightness = 0% to 100%
 
 **Scale System:**
-- User enters any scale value from 1-100 (numeric input)
-- System generates all steps from L0 to L100 using that delta
-- For high scale values, use modular arithmetic to wrap around
-- Examples:
-  - Scale 5 → L0, L5, L10, L15... L100 (21 steps)
-  - Scale 3 → L0, L3, L6, L9... L99 (34 steps)
-  - Scale 7 → L0, L7, L14, L21... L98 (15 steps, wraps at 98)
+- Scale clamped to integer range 2–13
+- Fibonacci multipliers (1, 2, 3, 5) derive surface tokens from base
+- `opposite_base = 100 - base` derives text and accent tokens (self-contained per theme, no cross-mode dependency)
 
-**Step Generation Formula:**
+**9 Neutral Tokens Per Mode:**
+
+| Token | Derivation | Purpose |
+|-------|-----------|---------|
+| base | User-selected L0 | Main background |
+| level1 | base ± scale × 1 | Cards/widgets |
+| level2 | base ± scale × 2 | Elevated surfaces |
+| level3 | base ± scale × 3 | Borders, inputs |
+| muted | base ± scale × 5 (clamped) | Disabled/placeholder, recessed surface |
+| primary | opposite_base ∓ scale × 2 | Primary text |
+| secondary | opposite_base ∓ scale × 3 or 5 | Secondary text (×5 if scale ≤ 5, ×3 if > 5) |
+| accentBase | opposite_base | Neutral accent (strongest) |
+| accentLevel1 | opposite_base ∓ scale × 1 | Neutral accent (softer) |
+
+± = subtract for light mode (moving darker), add for dark mode (moving lighter).
+
+**Muted Clamp:** Only the muted token is clamped — light mode floor 60%, dark mode ceiling 40%.
+
+**Worked Examples:**
+
 ```
-steps = [i * scale for i in range(0, floor(100/scale) + 1)]
-if steps[-1] != 100 and scale allows: append 100
+Light (base=97, scale=3):
+  base=97, level1=94, level2=91, level3=88, muted=82
+  primary=9, secondary=18, accentBase=3, accentLevel1=6
+
+Dark (base=7, scale=7):
+  base=7, level1=14, level2=21, level3=28, muted=40 (clamped from 42)
+  primary=79, secondary=72, accentBase=93, accentLevel1=86
 ```
-Use modular wrap for edge cases where scale doesn't divide evenly.
 
-### 2. Color Level System
+### 2. Chromatic Accent Generation
 
-User selects **Color Level 0** (main background) for each mode:
+When the user enables a chromatic accent (checkbox toggle):
+- User selects a hue (0–360°) via HueWheel
+- 6 shades are generated, each at the same lightness as a neutral token (level1, level2, level3, muted, secondary, primary)
+- Chroma at each lightness is computed by `calculateOptimalChroma()` — a curve that peaks around L≈50
+- This ensures chromatic shades "rhyme" with the neutral palette
+- HSL fallbacks are generated via culori with `clampChroma` for gamut safety
 
-**Light Mode Example (L0 = L100):**
-| Level | Calculation | Example |
-|-------|-------------|---------|
-| L0 (Background) | User-selected | L100 |
-| L1 (Cards/Widgets) | L0 - scale | L95 |
-| L2 (Elevated) | L0 - (scale × 2) | L90 |
-| L3/Muted | L100 - ((100 - L2) × 2) | L80 |
+**Accent Resolution:**
+- No chromatic: both neutral accents (accentBase + accentLevel1) are used
+- Chromatic enabled: chromatic accent fills primary slot, `accentBase` fills secondary (configurable via `NEUTRAL_WITH_CHROMATIC` constant)
 
-**Dark Mode Example (L0 = L0):**
-| Level | Calculation | Example |
-|-------|-------------|---------|
-| L0 (Background) | User-selected | L0 |
-| L1 (Cards/Widgets) | L0 + scale | L5 |
-| L2 (Elevated) | L0 + (scale × 2) | L10 |
-| L3/Muted | L2 × 2 | L20 |
+**shadcn `--primary` mapping:** When chromatic is active, `--primary` uses a vivid mid-tone shade (`oklch(50% 0.18 hue)`) to ensure visible color in both light and dark themes.
 
-### 3. Text Color Derivation
+### 3. System Color Linkage
 
-| Text Type | Light Mode Source | Dark Mode Source |
-|-----------|-------------------|------------------|
-| Primary | Dark mode L2 | Light mode L2 |
-| Secondary | Dark mode Muted | Light mode Muted |
-| Muted | Light mode Muted (self) | Dark mode Muted (self) |
+Three system colors (danger, warning, success) are linked as an equilateral triangle with 60° spacing:
 
-### 4. Accent Color Generation
+```
+Defaults:
+  danger:  25°
+  warning: 85°  (+60° from danger)
+  success: 145° (+60° from warning)
+```
 
-User selects hue values only. System generates 5 shades per accent by varying:
-- Lightness (L): 5 levels spread across usable range
-- Chroma (C): Consistent or slightly varied for vibrancy
+Dragging any one color rotates all three by the same delta (rigid rotation). Each color gets a restricted HueWheel showing only its 60° arc (±30° from center).
 
-**Accent Types:**
-- Primary accent (user hue)
-- Secondary accent (optional user hue)
-- Success (green range: ~145°)
-- Warning (amber range: ~85°)
-- Danger (red range: ~25°)
-
-System ensures accent colors are:
-- Harmonious with chosen neutral palette
-- Consistent in perceived brightness across accent types
-- WCAG compliant when used with neutral text/backgrounds
-
-### 5. WCAG Contrast Requirements
+### 4. WCAG Contrast
 
 | Ratio | Use Case |
 |-------|----------|
@@ -155,104 +166,86 @@ System ensures accent colors are:
 | 3:1 | Large text, UI components (AA) |
 | 7:1 | Normal text (AAA) |
 
-Tool validates and warns on all generated color combinations.
+Contrast ratio is displayed in the sidebar. Defaults to primary-text-on-background. Updates in real time when hovering over any component in the main grid (shows that component's foreground/background contrast).
 
-### 6. Color Output Format (Tailwind-Compatible)
+### 5. Export Formats
 
-```css
-/* tailwind.config.ts theme extension format */
-@theme {
-  /* Display P3 (OKLCH) - primary values */
-  --color-bg-0: oklch(100% 0 0);
-  --color-bg-1: oklch(95% 0 0);
-  --color-bg-2: oklch(90% 0 0);
-  --color-bg-muted: oklch(80% 0 0);
+4 formats available via Export modal:
 
-  --color-text-primary: oklch(10% 0 0);
-  --color-text-secondary: oklch(20% 0 0);
-  --color-text-muted: oklch(80% 0 0);
+1. **CSS** — `:root` + `.dark` blocks with `--color-*` OKLCH variables
+2. **Tailwind v4** — `@theme` + `.dark` blocks
+3. **JSON** — structured token data with meta
+4. **shadcn** — `@layer base` with shadcn naming convention (`--background`, `--foreground`, `--primary`, `--primary-foreground`, `--muted`, `--border`, `--ring`, `--destructive`, etc.) for both `:root` and `.dark`
 
-  --color-accent-primary-1: oklch(50% 0.15 250);
-  /* ... accent shades ... */
-
-  --color-success: oklch(60% 0.15 145);
-  --color-warning: oklch(70% 0.15 85);
-  --color-danger: oklch(55% 0.15 25);
-}
-
-/* sRGB Fallback (HSL) for browsers without OKLCH */
-@supports not (color: oklch(0% 0 0)) {
-  @theme {
-    --color-bg-0: hsl(0 0% 100%);
-    --color-bg-1: hsl(0 0% 95%);
-    /* ... all fallbacks ... */
-  }
-}
-```
-
-**Tailwind Usage:**
-```html
-<div class="bg-bg-0 text-text-primary">
-  <button class="bg-accent-primary-3 hover:bg-accent-primary-4">
-    Click me
-  </button>
-</div>
-```
+**Not yet implemented:** HSL `@supports not (color: oklch())` fallback block in CSS/Tailwind exports.
 
 ---
 
 ## Technical Architecture
 
-### File Structure (Next.js 15 App Router)
+### File Structure
 
 ```
 src/
 ├── app/
-│   ├── page.tsx              # Main generator UI (SSR entry)
-│   ├── layout.tsx            # Root layout
-│   └── globals.css           # Base Tailwind styles
+│   ├── page.tsx              # Renders ComponentGrid
+│   ├── layout.tsx            # ColorProvider + AppShell wrapper
+│   └── globals.css           # shadcn base styles + hue wheel CSS
+├── providers/
+│   └── ColorProvider.tsx     # Central state: palette, theme, CSS variable injection
 ├── components/
+│   ├── shell/
+│   │   ├── AppShell.tsx      # Header + Sidebar + main layout
+│   │   ├── Header.tsx        # Title + Export CTA + User Button
+│   │   └── Sidebar.tsx       # Container for all sidebar controls
+│   ├── sidebar/
+│   │   ├── ContrastDisplay.tsx   # WCAG ratio + level badge
+│   │   ├── ThemeToggle.tsx       # Light/dark switch
+│   │   ├── ScaleSlider.tsx       # Range input 2–13
+│   │   ├── BaseSelection.tsx     # L0 swatch grids (light + dark)
+│   │   ├── AccentSection.tsx     # Checkbox + HueWheel
+│   │   └── SystemColors.tsx      # 3 linked restricted HueWheels
 │   ├── wizard/
-│   │   ├── ScaleInput.tsx        # Step 1: Scale number input
-│   │   ├── ColorLevelPicker.tsx  # Step 2: L0 selection grid
-│   │   ├── HuePicker.tsx         # Steps 4-6: Hue selection (line/wheel)
-│   │   └── SystemAccents.tsx     # Step 6: System colors + rename inputs
+│   │   └── HueWheel.tsx      # Reusable hue wheel (full + restricted modes)
 │   ├── preview/
-│   │   ├── LivePreview.tsx       # Sample components with generated colors
-│   │   ├── SampleCard.tsx        # Card component preview
-│   │   ├── SampleButton.tsx      # Button component preview
-│   │   └── SampleForm.tsx        # Form inputs preview
-│   ├── validation/
-│   │   ├── ContrastIndicator.tsx # Bottom bar WCAG indicator
-│   │   └── ContrastMatrix.tsx    # Detailed contrast breakdown
-│   └── export/
-│       ├── ExportPanel.tsx       # Copy/download controls
-│       └── CSSPreview.tsx        # Tailwind CSS preview
+│   │   ├── ComponentGrid.tsx     # Mosaic grid container
+│   │   ├── ComponentSection.tsx  # Card wrapper with hover contrast
+│   │   └── sections/
+│   │       ├── ButtonSections.tsx
+│   │       ├── InputSections.tsx
+│   │       ├── FeedbackSections.tsx
+│   │       ├── OverlaySections.tsx
+│   │       ├── LayoutSections.tsx
+│   │       └── DataSections.tsx
+│   ├── export/
+│   │   └── ExportModal.tsx   # 4-format export dialog
+│   ├── ui/                   # 28 shadcn/ui primitives (auto-generated)
+│   └── shared/
+│       └── ColorSwatch.tsx
 ├── lib/
-│   ├── color/
-│   │   ├── oklch.ts          # OKLCH calculations
-│   │   ├── hsl.ts            # HSL conversions
-│   │   ├── contrast.ts       # WCAG contrast math (AA: 4.5:1, AAA: 7:1)
-│   │   ├── palette.ts        # Neutral palette generation
-│   │   └── accents.ts        # Accent shade generation
-│   └── export/
-│       └── tailwind.ts       # Tailwind CSS variable generation
+│   └── color/
+│       ├── palette-v2.ts     # V2 palette math (Fibonacci, independent themes)
+│       ├── system-colors.ts  # Equilateral triangle linkage
+│       ├── css-variables.ts  # Palette → CSS variable mapping (OKLCH + shadcn)
+│       ├── accents.ts        # System accent shade generation
+│       ├── contrast.ts       # WCAG contrast calculations
+│       ├── oklch.ts          # OKLCH utilities
+│       ├── hsl.ts            # HSL conversion via culori
+│       └── index.ts          # Barrel exports
 ├── hooks/
-│   ├── usePalette.ts         # Palette state management
-│   ├── useContrast.ts        # Contrast calculations
-│   └── useWizardStep.ts      # Wizard navigation state
+│   └── useColorContext.ts    # Convenience hook for ColorProvider
 └── types/
     └── color.ts              # TypeScript types
 ```
 
 ### Key Technical Decisions
 
-1. **Framework:** Next.js 15 with App Router, SSR, ISR-compliant
-2. **Color Library:** `culori` for accurate OKLCH ↔ sRGB conversions
-3. **State Management:** React state + URL params (shareable palettes)
-4. **Rendering:** Server components where possible, client for interactivity
-5. **Styling:** Tailwind CSS v4 — generated output is Tailwind-compatible
-6. **Deployment:** Vercel-ready out of the box
+1. **Framework:** Next.js 14 with App Router (originally planned for 15, settled on 14 for stability)
+2. **Color Library:** `culori` for OKLCH ↔ sRGB conversions + `clampChroma` for gamut mapping
+3. **State Management:** React context (`ColorProvider`) with `useMemo` derived values — CSS variables injected on `<html>` via `useEffect`
+4. **UI Components:** shadcn/ui primitives consume generated CSS variables natively — the app IS the preview
+5. **Styling:** Tailwind CSS v4 with shadcn's variable convention
+6. **Color Math:** Palette-v2 with Fibonacci multipliers, independent per-theme derivation, scale clamped 2–13
 
 ---
 
@@ -260,152 +253,104 @@ src/
 
 ### Functional Requirements
 
-| ID | Requirement | Priority |
-|----|-------------|----------|
-| FR-1 | User can enter any scale value (1-100) via numeric input | Must have |
-| FR-2 | System generates all lightness steps from scale with modular wrap | Must have |
-| FR-3 | User can select L0 from generated steps (light mode) | Must have |
-| FR-4 | User can select L0 from generated steps (dark mode) | Must have |
-| FR-5 | System calculates L1, L2, L3/muted automatically | Must have |
-| FR-6 | System calculates text colors from opposite mode | Must have |
-| FR-7 | User can select primary accent hue (line/wheel picker) | Must have |
-| FR-8 | User can optionally add secondary accent hue | Should have |
-| FR-9 | System generates 5 shades per accent | Must have |
-| FR-10 | System provides success/warning/danger accents | Must have |
-| FR-11 | User can adjust system accent hues | Should have |
-| FR-12 | User can rename system accent semantic names | Should have |
-| FR-13 | Persistent WCAG contrast indicator (bottom bar) | Must have |
-| FR-14 | Live preview with sample UI components | Must have |
-| FR-15 | Export Tailwind-compatible CSS (copy/download) | Must have |
-| FR-16 | CSS includes OKLCH + HSL fallbacks | Must have |
-| FR-17 | Shareable URL with palette configuration | Nice to have |
+| ID | Requirement | Priority | Status |
+|----|-------------|----------|--------|
+| FR-1 | User can set scale via slider (2–13) | Must have | DONE |
+| FR-2 | System derives 9 neutral tokens per mode using Fibonacci multipliers | Must have | DONE |
+| FR-3 | User can select L0 from swatch grid (light mode) | Must have | DONE |
+| FR-4 | User can select L0 from swatch grid (dark mode) | Must have | DONE |
+| FR-5 | System calculates level1–3, muted, primary, secondary, accentBase, accentLevel1 | Must have | DONE |
+| FR-6 | Text colors derived from `opposite_base = 100 - base` (self-contained) | Must have | DONE |
+| FR-7 | User can select primary accent hue via HueWheel | Must have | DONE |
+| FR-8 | ~~Secondary accent~~ | ~~Should have~~ | REMOVED |
+| FR-9 | System generates 6 chromatic shades at neutral lightness positions | Must have | DONE |
+| FR-10 | System provides success/warning/danger accents (60° linked triangle) | Must have | DONE |
+| FR-11 | User can adjust system accent hues (all three rotate together) | Should have | DONE |
+| FR-12 | User can rename system accent semantic names | Should have | DEFERRED |
+| FR-13 | WCAG contrast display in sidebar (updates on component hover) | Must have | DONE |
+| FR-14 | Live preview with real shadcn/ui components in mosaic grid | Must have | DONE (24/33 components) |
+| FR-15 | Export in 4 formats: CSS, Tailwind, JSON, shadcn | Must have | DONE |
+| FR-16 | CSS includes OKLCH values; HSL `@supports` fallback | Must have | PARTIAL (OKLCH done, HSL @supports not in export) |
+| FR-17 | Shareable URL with palette configuration | Nice to have | NOT STARTED |
 
 ### Non-Functional Requirements
 
-| Category | Requirement |
-|----------|-------------|
-| Performance | Color calculations <16ms (60fps interaction) |
-| Accessibility | Tool itself meets WCAG AA |
-| Browser Support | Modern browsers with OKLCH support + fallbacks |
-| Responsiveness | Usable on tablet and desktop |
-| Deployment | SSR, ISR-compliant, immediately deployable to Vercel |
-| Styling | All generated CSS is Tailwind v4 compatible |
+| Category | Requirement | Status |
+|----------|-------------|--------|
+| Performance | Color calculations <16ms (60fps interaction) | MET (useMemo, no lag) |
+| Accessibility | Tool itself meets WCAG AA | PARTIAL (contrast display works, full audit not done) |
+| Browser Support | Modern browsers with OKLCH support | MET |
+| Responsiveness | Desktop only (mobile deferred) | SCOPED |
+| Deployment | Deployable to Vercel | MET (pnpm build clean) |
+| Styling | Generated CSS is Tailwind v4 + shadcn compatible | MET |
+| Testing | 28 unit tests passing (palette-v2, system-colors, css-variables) | MET |
 
 ---
 
-## User Interface Flow
+## User Interface
 
-### Step-by-Step Wizard Flow
+### Layout (Lighthouse Framework)
 
-**Step 1: Scale Selection**
-- Numeric input field (1-100)
-- User enters desired scale value
-- On entry → system generates all lightness steps
+```
+┌──────────────────────────────────────────────────────┐
+│  HEADER                                              │
+│  khaaliColors              [Export icon] [User Button]│
+├────────────┬─────────────────────────────────────────┤
+│  SIDEBAR   │                                         │
+│  (sticky)  │   MAIN CONTENT                          │
+│  280px     │   (scrollable mosaic grid)              │
+│            │                                         │
+│ Contrast   │   ┌─────────┐ ┌─────────┐ ┌─────────┐ │
+│ Theme      │   │ Button   │ │ Badge   │ │ Card    │ │
+│ Scale      │   └─────────┘ └─────────┘ └─────────┘ │
+│ Base       │   ┌───────────────┐ ┌─────────┐       │
+│ Accent     │   │ Table         │ │ Input   │       │
+│ System     │   └───────────────┘ └─────────┘       │
+└────────────┴─────────────────────────────────────────┘
+```
 
-**Step 2: Color Level 0 Selection**
-- System shows first ~5 generated steps for both modes:
-  - **Light mode options:** e.g., L97, L94, L91, L88, L85 (if scale=3)
-  - **Dark mode options:** e.g., L0, L3, L6, L9, L12 (if scale=3)
-- User clicks to select their L0 for each mode
-- Can experiment/change selection freely
+All controls are always visible in the sidebar — no wizard step progression. Changes are reflected immediately in the component grid.
 
-**Step 3: Palette Generation & Preview**
-- System calculates L1, L2, L3/muted and text colors automatically
-- Live preview shows sample UI components:
-  - Cards, buttons, inputs, text hierarchy
-  - All rendered with generated colors
-- User can go back to adjust L0 selection
+**Header:** Title left, Export CTA (icon → label on hover) + "User Button" (placeholder, dashed border) right.
 
-**Step 4: Primary Accent Hue**
-- Hue picker (line slider or color wheel — pick what feels best)
-- System generates 5 shades per accent
-- Live preview updates with accent colors applied
+**Sidebar:** Contrast display, theme toggle, scale slider (2–13), base selection swatches, chromatic accent checkbox + HueWheel, 3 linked system color HueWheels.
 
-**Step 5: Secondary Accent (Optional)**
-- Checkbox: "Add secondary accent"
-- If checked → show hue picker
-- Preview updates accordingly
-
-**Step 6: System Accents Configuration**
-- Three hue pickers for: Success (~145°), Warning (~85°), Danger (~25°)
-- Editable semantic names (text inputs):
-  - "success" → user can rename to "positive", "good", etc.
-  - "warning" → "caution", "amber", etc.
-  - "danger" → "error", "destructive", etc.
-- Preview updates with system accent colors
-
-### Persistent UI Elements
-
-**Bottom Bar — WCAG Contrast Indicator:**
-- Always visible at bottom of viewport
-- Shows current contrast ratio for key combinations
-- ✓ or ✗ icon indicating WCAG AA/AAA compliance
-- Updates in real-time as colors change
-
-**Export Panel (accessible anytime):**
-- Copy all CSS to clipboard
-- Preview CSS variables (expandable)
-- Download as `.css` file
-- All output is Tailwind-compatible
+**Main Content:** CSS columns mosaic (1/2/3 columns by breakpoint) of shadcn component sections with all variants.
 
 ---
 
-## Implementation Phases
+## Implementation Status
 
-### Phase 1: Project Setup & Core Color Math
-- [ ] Initialize Next.js 15 project with TypeScript, Tailwind v4
-- [ ] Configure for Vercel deployment (SSR, ISR)
-- [ ] Install culori for color math
-- [ ] Implement OKLCH color calculations (`lib/color/oklch.ts`)
-- [ ] Implement HSL conversion functions (`lib/color/hsl.ts`)
-- [ ] Implement WCAG contrast calculations (`lib/color/contrast.ts`)
-- [ ] Create neutral palette generator with modular wrap (`lib/color/palette.ts`)
-- [ ] Create color level derivation logic (L0 → L1, L2, muted)
-- [ ] Create text color derivation (opposite mode mapping)
-- [ ] Unit tests for all color math
+### Completed
+- [x] Project setup (Next.js 14, Tailwind v4, culori, vitest)
+- [x] OKLCH calculations, HSL conversions, WCAG contrast math
+- [x] V2 palette math (Fibonacci multipliers, independent themes, muted clamp)
+- [x] System color equilateral triangle linkage (7 tests)
+- [x] CSS variable bridge (OKLCH + shadcn naming, 5 tests)
+- [x] V2 palette tests (16 tests)
+- [x] ColorProvider context with CSS variable injection
+- [x] Lighthouse layout (Header + Sidebar + Main)
+- [x] All 6 sidebar controls
+- [x] HueWheel restricted mode fixes (arc rendering, selector clamping, overflow)
+- [x] 28 shadcn/ui components installed
+- [x] 6 component section files (24 components rendered with variants)
+- [x] Mosaic grid layout (CSS columns)
+- [x] Export modal (4 formats, reads from context)
+- [x] Dead file cleanup (8 v1 files deleted)
+- [x] Chromatic accent visibility fix (vivid mid-tone for --primary)
+- [x] Font loading fix (inter variable on html)
+- [x] Theme toggle (light/dark, entire site)
+- [x] Hover contrast (auto foreground-on-card)
 
-### Phase 2: Wizard Flow — Scale & Color Levels
-- [ ] Scale numeric input component (1-100)
-- [ ] Step generation display (show all L values)
-- [ ] Color level picker grid for light mode (first ~5 options)
-- [ ] Color level picker grid for dark mode (first ~5 options)
-- [ ] Automatic L1/L2/muted calculation and display
-- [ ] Text color derivation display
-- [ ] Wizard step navigation (`hooks/useWizardStep.ts`)
-
-### Phase 3: Live Preview Components
-- [ ] LivePreview container component
-- [ ] SampleCard component (cards/widgets)
-- [ ] SampleButton component (primary, secondary, states)
-- [ ] SampleForm component (inputs, labels)
-- [ ] Apply generated CSS variables dynamically
-- [ ] Light/dark mode toggle in preview
-
-### Phase 4: Accent Color Configuration
-- [ ] Hue picker component (line slider or wheel)
-- [ ] 5-shade accent generation logic (`lib/color/accents.ts`)
-- [ ] Primary accent UI (Step 4)
-- [ ] Secondary accent UI with checkbox toggle (Step 5)
-- [ ] System accents UI with hue pickers (Step 6)
-- [ ] Semantic name text inputs (success→custom, etc.)
-- [ ] Accent preview integration
-
-### Phase 5: WCAG Validation & Export
-- [ ] ContrastIndicator bottom bar (always visible)
-- [ ] Real-time contrast ratio calculation
-- [ ] Pass/fail ✓/✗ indicator for WCAG AA
-- [ ] Tailwind CSS variable generator (`lib/export/tailwind.ts`)
-- [ ] ExportPanel with copy-to-clipboard
-- [ ] CSS preview modal/section
-- [ ] Download .css file button
-- [ ] URL-based palette sharing (optional)
-
-### Phase 6: Polish & Deployment
-- [ ] Responsive design (tablet, desktop)
+### Remaining
+- [ ] 9 missing component sections (Button Group, Combo Box, Date Picker, Field, Input Group, Input OTP, Item Label, Sonner, Toast)
+- [ ] HSL `@supports` fallback block in CSS/Tailwind export
+- [ ] Semantic name renaming for system accents (FR-12)
+- [ ] Shareable URL with palette configuration (FR-17)
+- [ ] Mobile / responsive layout
 - [ ] Accessibility audit of the tool itself
-- [ ] Edge cases (high scale values, boundary L values)
-- [ ] Performance optimization (<16ms calculations)
-- [ ] Final Vercel deployment verification
+- [ ] `accents.ts` cleanup (spec says removed, but still needed for createSystemAccent)
+- [ ] Rename `palette-v2.ts` → `palette.ts` and clean up v1 types in `color.ts`
 
 ---
 
@@ -413,10 +358,10 @@ src/
 
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| OKLCH browser support gaps | Low | Medium | HSL fallback system |
-| Color math accuracy issues | Medium | High | Use established library (culori), comprehensive tests |
-| Complex UI for non-designers | Medium | Medium | Progressive disclosure, sensible defaults |
-| Performance with live updates | Low | Medium | Debounce calculations, optimize renders |
+| OKLCH browser support gaps | Low | Medium | HSL fallback system (partially implemented) |
+| Color math accuracy issues | Low | High | culori library + 28 passing tests |
+| Complex UI for non-designers | Medium | Medium | All controls visible, immediate feedback, no wizard steps |
+| Performance with live updates | Low | Low | useMemo derivation, CSS variable injection (no prop drilling) |
 
 ---
 
@@ -424,32 +369,14 @@ src/
 
 | Question | Owner | Status |
 |----------|-------|--------|
-| Should palette be saveable to local storage? | Trent | Open |
-| Include color blindness preview (v1 or later)? | Trent | Deferred to v2 |
-| System accent hues | Trent | Resolved: Success ~145°, Warning ~85°, Danger ~25° |
-| Should accent chroma be user-configurable? | Trent | Resolved: Auto-calculate (system determines optimal chroma) |
-
----
-
-## Verification Plan
-
-### Testing Strategy
-
-1. **Unit Tests:** All color math functions (OKLCH, HSL, contrast, palette generation)
-2. **Component Tests:** UI components render correctly with various inputs
-3. **Integration Tests:** Full palette generation flow
-4. **Visual Testing:** Storybook or similar for component states
-5. **Accessibility Testing:** axe-core, manual screen reader testing
-6. **Manual Testing:** Generate palettes and verify in real designs
-
-### Definition of Done
-
-- [ ] All color calculations match specification
-- [ ] WCAG contrast validation works correctly
-- [ ] CSS export produces valid Display P3 + fallback code
-- [ ] UI is responsive and accessible
-- [ ] No console errors or warnings
-- [ ] Performance targets met (<16ms calculations)
+| Should palette be saveable to local storage? | Palash | Open |
+| Include color blindness preview? | Palash | Deferred |
+| System accent hues | — | Resolved: 25°/85°/145°, linked as 60° triangle |
+| Accent chroma configurable? | — | Resolved: Auto-calculate via `calculateOptimalChroma` |
+| Which neutral accent stays with chromatic? | — | Resolved: `accentBase` (configurable constant) |
+| Secondary chromatic accent? | — | Resolved: Removed (primary only) |
+| Muted token: disabled/placeholder or separate? | — | Resolved: Muted surface doubles as disabled text |
+| Contrast validation approach? | Palash | Open (user mentioned "different solution in mind") |
 
 ---
 
@@ -458,14 +385,8 @@ src/
 - [OKLCH Color Space](https://oklch.com/)
 - [culori library](https://culorijs.org/)
 - [WCAG Contrast Guidelines](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html)
-- [Display P3 CSS](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch)
-- Vercel React Best Practices (to be applied during implementation)
-
----
-
-## Next Steps
-
-1. Confirm remaining open questions
-2. Approve this PRD
-3. Initialize Next.js 15 project in `/Users/trxnt/Desktop/khaaliColours`
-4. Begin Phase 1: Project Setup & Core Color Math
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Lighthouse Framework](context in `/Users/thisispalash/local/data-dump/proj/lighthouse/context/engineering/`)
+- Design spec: `spec/lighthouse-redesign.md`
+- Implementation plan: `spec/lighthouse-redesign-plan.md`
+- Code review: `spec/review-2026-04-09.md`
