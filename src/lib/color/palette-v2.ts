@@ -502,3 +502,34 @@ export function generateThemeV2(input: ThemeV2Input): ThemeV2 {
     darkAccents: resolveAccents(dark, chromaticDark),
   };
 }
+
+// ---------------------------------------------------------------------------
+// L0 suggestions (ported from v1 palette.ts)
+// ---------------------------------------------------------------------------
+
+function generateStepsFromZero(scale: number): number[] {
+  const steps: number[] = [];
+  for (let i = 0; i * scale <= 100; i++) {
+    steps.push(i * scale);
+  }
+  return steps;
+}
+
+function generateStepsFromHundred(scale: number): number[] {
+  const steps: number[] = [];
+  for (let i = 0; 100 - i * scale >= 0; i++) {
+    steps.push(100 - i * scale);
+  }
+  return steps;
+}
+
+/** Suggested L0 options for light and dark mode base selection. */
+export function getSuggestedL0Options(
+  scale: number,
+  count: number = 5
+): { light: number[]; dark: number[] } {
+  return {
+    light: generateStepsFromHundred(scale).slice(0, count),
+    dark: generateStepsFromZero(scale).slice(0, count),
+  };
+}
