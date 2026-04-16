@@ -8,18 +8,19 @@ import type { OklchColor } from '@/types/color';
 interface ComponentSectionProps {
   title: string;
   children: ReactNode;
-  /** Optional foreground/background OKLCH for hover contrast. */
+  /** Optional foreground/background OKLCH for hover contrast. Falls back to foreground-on-card. */
   contrastPair?: { fg: OklchColor; bg: OklchColor };
 }
 
 export function ComponentSection({ title, children, contrastPair }: ComponentSectionProps) {
-  const { setHoveredContrast } = useColorContext();
+  const { activePalette, setHoveredContrast } = useColorContext();
 
   const handleMouseEnter = useCallback(() => {
-    if (contrastPair) {
-      setHoveredContrast(checkContrast(contrastPair.fg, contrastPair.bg));
-    }
-  }, [contrastPair, setHoveredContrast]);
+    // Use explicit pair if provided, otherwise compute foreground-on-card
+    const fg = contrastPair?.fg ?? activePalette.tokens.primary.oklch;
+    const bg = contrastPair?.bg ?? activePalette.tokens.level1.oklch;
+    setHoveredContrast(checkContrast(fg, bg));
+  }, [contrastPair, activePalette, setHoveredContrast]);
 
   const handleMouseLeave = useCallback(() => {
     setHoveredContrast(null);
@@ -27,7 +28,7 @@ export function ComponentSection({ title, children, contrastPair }: ComponentSec
 
   return (
     <section
-      className="rounded-xl border border-[var(--border)] p-5 bg-[var(--card)]"
+      className="rounded-xl border border-[var(--border)] p-5 bg-[var(--card)] break-inside-avoid mb-5"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

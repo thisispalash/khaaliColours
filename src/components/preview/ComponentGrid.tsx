@@ -9,7 +9,7 @@ import { DataSections } from './sections/DataSections';
 
 export function ComponentGrid() {
   return (
-    <div className="space-y-6 pb-12">
+    <div className="columns-1 lg:columns-2 xl:columns-3 gap-5 pb-12">
       <ButtonSections />
       <InputSections />
       <FeedbackSections />
