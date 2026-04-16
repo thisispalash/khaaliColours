@@ -123,20 +123,28 @@ export function HueWheel({
   const lineEndY = size / 2 + Math.sin(lineAngle) * outerRadius;
 
   // Generate gradient based on range
-  const arcDeg = isRangeLocked
-    ? ((maxHue! - minHue! + 360) % 360) || 360
-    : 360;
-
+  // For restricted mode: render only the allowed arc with smooth hue gradient,
+  // rest is transparent. conic-gradient rotates from 12-o'clock (top),
+  // but our hue 0° maps to 3-o'clock in the wheel, so we offset by -90°.
   const gradientStyle = isRangeLocked
-    ? {
-        background: `conic-gradient(from ${minHue! - 90}deg,
-          oklch(65% 0.2 ${minHue}),
-          oklch(65% 0.2 ${minHue! + arcDeg / 2}),
-          oklch(65% 0.2 ${maxHue}),
-          transparent ${arcDeg}deg,
-          transparent 360deg
-        )`,
-      }
+    ? (() => {
+        const min = minHue!;
+        const max = maxHue!;
+        const arc = ((max - min + 360) % 360) || 360;
+        const mid = (min + arc / 2) % 360;
+        // CSS conic-gradient "from" is clockwise from top (12-o'clock).
+        // Our hues map: 0° = right (3-o'clock), so subtract 90° for CSS.
+        const fromDeg = min - 90;
+        return {
+          background: `conic-gradient(from ${fromDeg}deg,
+            oklch(65% 0.2 ${min}) 0deg,
+            oklch(65% 0.2 ${mid}) ${arc / 2}deg,
+            oklch(65% 0.2 ${max}) ${arc}deg,
+            transparent ${arc}deg,
+            transparent 360deg
+          )`,
+        };
+      })()
     : undefined;
 
   return (
@@ -160,15 +168,22 @@ export function HueWheel({
             left: '25%',
             width: '50%',
             height: '50%',
-            background: 'var(--app-surface)',
+            background: 'var(--card)',
           }}
         >
           {/* Hue value in center */}
           <div
-            className="w-14 h-14 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: `oklch(65% 0.15 ${value})` }}
+            className="rounded-full flex items-center justify-center"
+            style={{
+              backgroundColor: `oklch(65% 0.15 ${value})`,
+              width: size * 0.3,
+              height: size * 0.3,
+            }}
           >
-            <span className="text-sm font-bold text-white drop-shadow-sm">
+            <span
+              className="font-bold text-white drop-shadow-sm"
+              style={{ fontSize: Math.max(9, size * 0.08) }}
+            >
               {value}°
             </span>
           </div>
