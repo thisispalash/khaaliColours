@@ -3,6 +3,33 @@
 > khaaliColors — OKLCH Color System Generator
 > Date: 2026-04-15
 
+## Status (updated 2026-04-15)
+
+| Section | Status | Notes |
+|---------|--------|-------|
+| Layout Structure | DONE | Header + Sidebar + Main grid merged to main |
+| Header | DONE | CTA + User Button placeholder |
+| Sidebar Controls | DONE | All 6 controls implemented |
+| Main Content Grid | DONE | 28 shadcn components installed, 6 section files, mosaic layout |
+| State Management (ColorProvider) | DONE | Context + CSS variable injection working |
+| Theme Toggle | DONE | Light/dark switches entire site |
+| System Color Linkage | DONE | 60° triangle, 7 tests passing |
+| HueWheel Fixes | DONE | Restricted arc + selector clamping + overflow clip |
+| Component Grid | PARTIAL | 24 of 33 components rendered; missing: Button Group, Combo Box, Date Picker, Field, Input Group (installed but not in sections), Input OTP (installed), Item Label, Sonner (installed), Toast |
+| Hover Contrast | DONE | Auto-computes foreground-on-card, updates sidebar |
+| Export (4 formats) | DONE | CSS, Tailwind, JSON, shadcn — all via context |
+| Palette Integration (v2) | DONE | v1 palette.ts deleted, getSuggestedL0Options moved to v2 |
+| Dead File Cleanup | DONE | 8 files deleted |
+| Chromatic Accent Visibility | DONE | Fixed vivid mid-tone for --primary in both themes |
+| Font Loading | DONE | inter.variable moved to html element |
+| Mosaic Layout | DONE | CSS columns (1/2/3 by breakpoint) |
+
+### Remaining from spec (not yet done)
+
+- 9 components not yet in section files (Button Group, Combo Box, Date Picker, Field, Input Group, Input OTP, Item Label, Sonner, Toast)
+- HSL fallback `@supports` block in CSS export (spec mentions it, not implemented)
+- `accents.ts` still exists (spec says "no longer referenced" but it IS still used for `createSystemAccent`)
+
 ## Overview
 
 Replace the current 60/40 wizard/preview split with a Lighthouse-framework layout: fixed header, sticky left sidebar with all controls, and a scrollable main content area rendering real shadcn/ui primitive components styled by the generated palette. The app becomes both the tool and the preview — shadcn components consume our CSS variables natively.
