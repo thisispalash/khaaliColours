@@ -156,6 +156,7 @@ export function HueWheel({
           width: size,
           height: size,
           borderRadius: '50%',
+          overflow: 'hidden',
           ...gradientStyle,
         }}
         onMouseDown={handleMouseDown}

@@ -6,7 +6,17 @@
  */
 
 import type { ModePaletteV2, ChromaticAccent } from './palette-v2';
+import { formatOklchHue } from './palette-v2';
 import { createSystemAccent } from './accents';
+
+/**
+ * Generate a vivid primary action color at ~50% lightness for any hue.
+ * At L=50 the optimal chroma peaks (~0.18), so this is always visibly colored
+ * regardless of theme. Used for --primary when chromatic accent is active.
+ */
+function vividAccent(hue: number): string {
+  return formatOklchHue(50, 0.18, hue);
+}
 
 type CssVarMap = Record<string, string>;
 
@@ -78,9 +88,9 @@ export function generateShadcnVariables(
     '--muted-foreground': t.secondary.css.oklch,
     '--border': t.level3.css.oklch,
     '--input': t.level3.css.oklch,
-    '--ring': chromatic ? chromatic.shades.primary.css.oklch : t.accentBase.css.oklch,
-    '--primary': chromatic ? chromatic.shades.primary.css.oklch : t.accentBase.css.oklch,
-    '--primary-foreground': t.base.css.oklch,
+    '--ring': chromatic ? vividAccent(chromatic.hue) : t.accentBase.css.oklch,
+    '--primary': chromatic ? vividAccent(chromatic.hue) : t.accentBase.css.oklch,
+    '--primary-foreground': chromatic ? 'oklch(98% 0 none)' : t.base.css.oklch,
     '--secondary': t.level2.css.oklch,
     '--secondary-foreground': t.primary.css.oklch,
     '--accent': t.level2.css.oklch,
