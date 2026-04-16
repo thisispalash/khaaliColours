@@ -43,3 +43,4 @@ next-env.d.ts
 # ai harness stuff
 .graphify_*
 graphify-out/cache
+.claude/settings.local.json
