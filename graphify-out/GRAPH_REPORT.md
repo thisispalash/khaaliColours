@@ -1,19 +1,20 @@
 # Graph Report - .  (2026-04-15)
 
 ## Corpus Check
-- Corpus is ~31,755 words - fits in a single context window. You may not need a graph.
+- Corpus is ~33,777 words - fits in a single context window. You may not need a graph.
 
 ## Summary
-- 310 nodes · 279 edges · 83 communities detected
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 22 edges (avg confidence: 0.75)
+- 355 nodes · 352 edges · 84 communities detected
+- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 30 edges (avg confidence: 0.78)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
+- [[_COMMUNITY_App Shell & PRD|App Shell & PRD]]
 - [[_COMMUNITY_Color System & Assets|Color System & Assets]]
-- [[_COMMUNITY_Palette Generation & Sidebar|Palette Generation & Sidebar]]
+- [[_COMMUNITY_Palette Generation & State|Palette Generation & State]]
 - [[_COMMUNITY_V2 Palette Internals|V2 Palette Internals]]
-- [[_COMMUNITY_App Shell & Layout|App Shell & Layout]]
 - [[_COMMUNITY_V1 Accent Engine|V1 Accent Engine]]
+- [[_COMMUNITY_Sidebar Controls|Sidebar Controls]]
 - [[_COMMUNITY_OKLCH Utilities|OKLCH Utilities]]
 - [[_COMMUNITY_Select Component|Select Component]]
 - [[_COMMUNITY_Export Pipeline|Export Pipeline]]
@@ -29,11 +30,10 @@
 - [[_COMMUNITY_Alert Dialog|Alert Dialog]]
 - [[_COMMUNITY_Command Component|Command Component]]
 - [[_COMMUNITY_Page Entry|Page Entry]]
-- [[_COMMUNITY_Community 20|Community 20]]
-- [[_COMMUNITY_Community 21|Community 21]]
-- [[_COMMUNITY_Community 22|Community 22]]
-- [[_COMMUNITY_Community 23|Community 23]]
-- [[_COMMUNITY_Community 24|Community 24]]
+- [[_COMMUNITY_HueWheel Component|HueWheel Component]]
+- [[_COMMUNITY_Card Component|Card Component]]
+- [[_COMMUNITY_Progress Component|Progress Component]]
+- [[_COMMUNITY_Alert Component|Alert Component]]
 - [[_COMMUNITY_Community 25|Community 25]]
 - [[_COMMUNITY_Community 26|Community 26]]
 - [[_COMMUNITY_Community 27|Community 27]]
@@ -92,18 +92,19 @@
 - [[_COMMUNITY_Community 80|Community 80]]
 - [[_COMMUNITY_Community 81|Community 81]]
 - [[_COMMUNITY_Community 82|Community 82]]
+- [[_COMMUNITY_Community 83|Community 83]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `Khaali Colours PRD` - 14 edges
-2. `Sidebar Component (sticky controls)` - 8 edges
-3. `OKLCH Color Space` - 7 edges
-4. `Lighthouse Layout Framework (Header + Sidebar + Main)` - 7 edges
-5. `ColorProvider React Context` - 7 edges
-6. `generateModePaletteV2()` - 6 edges
-7. `createChromaticShade()` - 6 edges
-8. `Next.js 15 + React 19 Tech Stack` - 6 edges
-9. `normalize()` - 5 edges
-10. `createNeutralToken()` - 4 edges
+2. `Lighthouse Redesign Spec` - 13 edges
+3. `khaaliColors PRD` - 11 edges
+4. `OKLCH Color Space` - 10 edges
+5. `Neutral Palette Generation (Fibonacci Multipliers)` - 10 edges
+6. `Sidebar Component (sticky controls)` - 8 edges
+7. `Lighthouse Layout Framework (Header + Sidebar + Main)` - 7 edges
+8. `ColorProvider React Context` - 7 edges
+9. `generateModePaletteV2()` - 6 edges
+10. `createChromaticShade()` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Next.js 15 + React 19 Tech Stack` --conceptually_related_to--> `Icon: Vercel Logo (White Triangle)`  [INFERRED]
@@ -114,116 +115,115 @@
   PRD.md → spec/review-2026-04-09.md
 - `Contrast Ratio Display Control` --semantically_similar_to--> `Contrast Validation Gaps Community`  [INFERRED] [semantically similar]
   spec/lighthouse-redesign.md → graphify-out/GRAPH_REPORT.md
-- `Khaali Colours PRD` --references--> `Bug: Zero Responsiveness (Hardcoded 60/40 Split)`  [INFERRED]
-  PRD.md → spec/review-2026-04-09.md
+- `Export Formats (CSS, Tailwind v4, JSON, shadcn)` --semantically_similar_to--> `Export Dialog (4 Formats via Context)`  [INFERRED] [semantically similar]
+  PRD.md → spec/lighthouse-redesign.md
 
 ## Hyperedges (group relationships)
-- **Core Color System Specification** — prd_oklch_color_space, prd_neutral_palette_generation, prd_color_level_system, prd_text_color_derivation, prd_accent_color_generation, prd_display_p3_gamut, prd_srgb_fallback [EXTRACTED 0.95]
 - **High-Value Bugs Blocking Ship** — review_hsl_fallback_missing, review_huewheel_mouse_only, review_no_responsiveness, review_contrast_not_persistent, review_dead_wizard_components, review_lock_file_conflict [EXTRACTED 1.00]
 - **WCAG Accessibility Validation Chain** — prd_wcag_contrast, review_contrast_not_persistent, review_dead_code_contrast [INFERRED 0.85]
-- **Sidebar Control Stack (6 Controls)** — lighthouse_contrast_display, lighthouse_theme_toggle, lighthouse_scale_slider, lighthouse_base_selection, lighthouse_accent_section, lighthouse_system_colors_ui [EXTRACTED 1.00]
-- **State-to-Render Pipeline (Provider -> CSS -> Components)** — lighthouse_color_provider, lighthouse_css_variable_injection, lighthouse_shadcn_native_consumption, lighthouse_component_grid [EXTRACTED 0.95]
-- **Core Implementation Sequence (Tasks 1-4 Foundation)** — plan_task1_shadcn_init, plan_task2_system_colors, plan_task3_css_variables, plan_task4_color_provider, plan_task16_wire_layout [EXTRACTED 0.90]
+- **Color System Specification (OKLCH + Neutrals + Chromatic + System + WCAG)** — prd_oklch_color_space, prd_neutral_palette_generation, prd_chromatic_accent_generation, prd_system_color_linkage, prd_wcag_contrast, prd_nine_neutral_tokens, prd_scale_system [EXTRACTED 0.95]
+- **Lighthouse Implementation Pipeline (Init -> Math -> Provider -> UI -> Polish)** — plan_task1_shadcn_init, plan_task2_system_colors, plan_task3_css_variables, plan_task4_color_provider, plan_task7_sidebar_controls, plan_task16_wire_layout, plan_task19_smoke_test [EXTRACTED 0.90]
+- **Core Design Rationales (OKLCH + App-as-Preview + No-Wizard + Independent Themes)** — rationale_oklch_over_hsl, rationale_app_is_preview, rationale_no_wizard, rationale_independent_themes, rationale_fibonacci_multipliers, rationale_css_variable_injection [INFERRED 0.80]
 
 ## Communities
 
-### Community 0 - "Color System & Assets"
-Cohesion: 0.08
-Nodes (34): Icon: Next.js Wordmark, Icon: Vercel Logo (White Triangle), Accent Color Generation, Color Level System (L0-L3/Muted), culori Library (Color Math), Display P3 Gamut, Khaali Colours PRD, Live Preview with Sample Components (+26 more)
+### Community 0 - "App Shell & PRD"
+Cohesion: 0.06
+Nodes (40): CLAUDE.md Graphify Rules, Community: App Shell & Layout (16 nodes, cohesion 0.12), God Node: Khaali Colours PRD (14 edges), God Node: Sidebar Component (8 edges), Hue Wheel Picker Community, Knowledge Gap: 50 Isolated Nodes, Khaali Colours PRD (God Node), Graph Report (310 nodes, 279 edges, 83 communities) (+32 more)
 
-### Community 1 - "Palette Generation & Sidebar"
-Cohesion: 0.08
-Nodes (28): Contrast Validation Gaps Community, generateModePaletteV2() (God Node), OKLCH Color Space (God Node), Chromatic Accent Section, Base Selection (L0 swatches), ColorProvider React Context, ColorState Interface, Contrast Ratio Display Control (+20 more)
+### Community 1 - "Color System & Assets"
+Cohesion: 0.07
+Nodes (38): Community: Color System & Assets (34 nodes, cohesion 0.08), Community: Palette Generation & Sidebar (28 nodes, cohesion 0.08), Icon: Next.js Wordmark, Icon: Vercel Logo (White Triangle), Accent Color Generation, Color Level System (L0-L3/Muted), Display P3 Gamut, Khaali Colours PRD (+30 more)
 
-### Community 2 - "V2 Palette Internals"
+### Community 2 - "Palette Generation & State"
+Cohesion: 0.07
+Nodes (35): Contrast Validation Gaps Community, generateModePaletteV2() (God Node), OKLCH Color Space (God Node), ColorProvider React Context, ColorState Interface, ColorState Interface (User Inputs + Computed), 33 shadcn/ui Component Grid, Contrast Ratio Display Control (+27 more)
+
+### Community 3 - "V2 Palette Internals"
 Cohesion: 0.2
 Nodes (18): calculateOptimalChroma(), clampMuted(), clampScale(), createChromaticShade(), createNeutralToken(), formatHslCss(), formatOklchHue(), formatOklchNone() (+10 more)
-
-### Community 3 - "App Shell & Layout"
-Cohesion: 0.12
-Nodes (16): Khaali Colours PRD (God Node), Wizard UX Issues Community, 33 shadcn/ui Component Grid, Header Component (shell), Lighthouse Layout Framework (Header + Sidebar + Main), Lighthouse Redesign Implementation Plan, Lighthouse Redesign Spec, Lighthouse File Structure (+8 more)
 
 ### Community 4 - "V1 Accent Engine"
 Cohesion: 0.24
 Nodes (8): calculateOptimalChroma(), createAccentColor(), createAccentShade(), createSystemAccent(), createSystemAccentShade(), generateAccentShades(), generateDefaultSystemAccents(), generateSystemAccentShades()
 
-### Community 5 - "OKLCH Utilities"
+### Community 5 - "Sidebar Controls"
+Cohesion: 0.18
+Nodes (12): Chromatic Accent Section, Base Selection (L0 swatches), Scale Slider Control (2-13), Sidebar Component (sticky controls), System Color Equilateral Triangle Linkage, System Colors UI (3 restricted hue wheels), Theme Toggle Flow (light/dark), Task 2: System Color Linkage Math (+4 more)
+
+### Community 6 - "OKLCH Utilities"
 Cohesion: 0.2
 Nodes (2): createNeutral(), createOklch()
 
-### Community 6 - "Select Component"
+### Community 7 - "Select Component"
 Cohesion: 0.2
 Nodes (0): 
 
-### Community 7 - "Export Pipeline"
+### Community 8 - "Export Pipeline"
 Cohesion: 0.25
 Nodes (0): 
 
-### Community 8 - "WCAG Contrast"
+### Community 9 - "WCAG Contrast"
 Cohesion: 0.48
 Nodes (5): checkContrast(), findContrastingLightness(), getContrastRatio(), getRelativeLuminance(), suggestTextColor()
 
-### Community 9 - "HSL Fallback"
+### Community 10 - "HSL Fallback"
 Cohesion: 0.38
 Nodes (3): createHsl(), createNeutralHsl(), oklchToHsl()
 
-### Community 10 - "Popover Component"
+### Community 11 - "Popover Component"
 Cohesion: 0.33
 Nodes (0): 
 
-### Community 11 - "Dialog Component"
+### Community 12 - "Dialog Component"
 Cohesion: 0.33
 Nodes (0): 
 
-### Community 12 - "Dropdown Menu"
+### Community 13 - "Dropdown Menu"
 Cohesion: 0.33
 Nodes (0): 
 
-### Community 13 - "System Color Triangle"
+### Community 14 - "System Color Triangle"
 Cohesion: 0.67
 Nodes (5): createSystemTriangle(), getRestrictedRange(), normalize(), rotateTriangle(), shortestDelta()
 
-### Community 14 - "Accordion Component"
+### Community 15 - "Accordion Component"
 Cohesion: 0.4
 Nodes (0): 
 
-### Community 15 - "Table Component"
+### Community 16 - "Table Component"
 Cohesion: 0.4
 Nodes (0): 
 
-### Community 16 - "CSS Variable Bridge"
+### Community 17 - "CSS Variable Bridge"
 Cohesion: 0.5
 Nodes (2): generateShadcnVariables(), vividAccent()
 
-### Community 17 - "Alert Dialog"
+### Community 18 - "Alert Dialog"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 18 - "Command Component"
+### Community 19 - "Command Component"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 19 - "Page Entry"
+### Community 20 - "Page Entry"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 20 - "Community 20"
+### Community 21 - "HueWheel Component"
 Cohesion: 1.0
 Nodes (2): getHueName(), HueWheel()
 
-### Community 21 - "Community 21"
+### Community 22 - "Card Component"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 22 - "Community 22"
+### Community 23 - "Progress Component"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 23 - "Community 23"
-Cohesion: 0.67
-Nodes (0): 
-
-### Community 24 - "Community 24"
+### Community 24 - "Alert Component"
 Cohesion: 0.67
 Nodes (0): 
 
@@ -233,7 +233,7 @@ Nodes (0):
 
 ### Community 26 - "Community 26"
 Cohesion: 0.67
-Nodes (3): Hue Wheel Picker Community, HueWheel Restricted Mode Bug Fixes, Task 5: Fix HueWheel Restricted Mode Bugs
+Nodes (0): 
 
 ### Community 27 - "Community 27"
 Cohesion: 1.0
@@ -357,7 +357,7 @@ Nodes (0):
 
 ### Community 57 - "Community 57"
 Cohesion: 1.0
-Nodes (2): Out of Scope Items, Rationale: Desktop Only (Responsive Deferred)
+Nodes (2): Lighthouse Redesign Out of Scope Items, Rationale: Desktop Only (Mobile/Responsive Deferred)
 
 ### Community 58 - "Community 58"
 Cohesion: 1.0
@@ -433,34 +433,38 @@ Nodes (0):
 
 ### Community 76 - "Community 76"
 Cohesion: 1.0
-Nodes (1): Graph Report
+Nodes (1): Task 10: Button & Toggle Sections
 
 ### Community 77 - "Community 77"
 Cohesion: 1.0
-Nodes (1): Task 10: Button & Toggle Sections
+Nodes (1): Task 11: Input & Form Sections
 
 ### Community 78 - "Community 78"
 Cohesion: 1.0
-Nodes (1): Task 11: Input & Form Sections
+Nodes (1): Task 12: Feedback & Status Sections
 
 ### Community 79 - "Community 79"
 Cohesion: 1.0
-Nodes (1): Task 12: Feedback & Status Sections
+Nodes (1): Task 13: Overlay & Popup Sections
 
 ### Community 80 - "Community 80"
 Cohesion: 1.0
-Nodes (1): Task 13: Overlay & Popup Sections
+Nodes (1): Task 14: Layout & Structure Sections
 
 ### Community 81 - "Community 81"
 Cohesion: 1.0
-Nodes (1): Task 14: Layout & Structure Sections
+Nodes (1): Task 15: Data Display Sections
 
 ### Community 82 - "Community 82"
 Cohesion: 1.0
-Nodes (1): Task 15: Data Display Sections
+Nodes (1): Shareable URL with Palette Config (Not Started)
+
+### Community 83 - "Community 83"
+Cohesion: 1.0
+Nodes (1): Community: V2 Palette Internals (18 nodes, cohesion 0.2)
 
 ## Knowledge Gaps
-- **50 isolated node(s):** `Live Preview with Sample Components`, `Planned File Structure`, `Shareable URL with Palette Config (Nice to Have)`, `Rationale: OKLCH for Perceptual Uniformity`, `Rationale: Progressive Disclosure via Wizard` (+45 more)
+- **62 isolated node(s):** `Live Preview with Sample Components`, `Planned File Structure`, `Shareable URL with Palette Config (Nice to Have)`, `Rationale: OKLCH for Perceptual Uniformity`, `Rationale: Progressive Disclosure via Wizard` (+57 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **Thin community `Community 27`** (2 nodes): `RootLayout()`, `layout.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -522,7 +526,7 @@ Nodes (1): Task 15: Data Display Sections
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 56`** (2 nodes): `utils.ts`, `cn()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 57`** (2 nodes): `Out of Scope Items`, `Rationale: Desktop Only (Responsive Deferred)`
+- **Thin community `Community 57`** (2 nodes): `Lighthouse Redesign Out of Scope Items`, `Rationale: Desktop Only (Mobile/Responsive Deferred)`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 58`** (1 nodes): `next-env.d.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -560,35 +564,37 @@ Nodes (1): Task 15: Data Display Sections
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 75`** (1 nodes): `css-variables.test.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 76`** (1 nodes): `Graph Report`
+- **Thin community `Community 76`** (1 nodes): `Task 10: Button & Toggle Sections`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 77`** (1 nodes): `Task 10: Button & Toggle Sections`
+- **Thin community `Community 77`** (1 nodes): `Task 11: Input & Form Sections`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 78`** (1 nodes): `Task 11: Input & Form Sections`
+- **Thin community `Community 78`** (1 nodes): `Task 12: Feedback & Status Sections`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 79`** (1 nodes): `Task 12: Feedback & Status Sections`
+- **Thin community `Community 79`** (1 nodes): `Task 13: Overlay & Popup Sections`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 80`** (1 nodes): `Task 13: Overlay & Popup Sections`
+- **Thin community `Community 80`** (1 nodes): `Task 14: Layout & Structure Sections`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 81`** (1 nodes): `Task 14: Layout & Structure Sections`
+- **Thin community `Community 81`** (1 nodes): `Task 15: Data Display Sections`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 82`** (1 nodes): `Task 15: Data Display Sections`
+- **Thin community `Community 82`** (1 nodes): `Shareable URL with Palette Config (Not Started)`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 83`** (1 nodes): `Community: V2 Palette Internals (18 nodes, cohesion 0.2)`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Sidebar Component (sticky controls)` connect `Palette Generation & Sidebar` to `App Shell & Layout`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
-- **Why does `Lighthouse Layout Framework (Header + Sidebar + Main)` connect `App Shell & Layout` to `Palette Generation & Sidebar`?**
-  _High betweenness centrality (0.011) - this node is a cross-community bridge._
+- **Why does `khaaliColors PRD` connect `App Shell & PRD` to `Color System & Assets`, `Palette Generation & State`?**
+  _High betweenness centrality (0.046) - this node is a cross-community bridge._
+- **Why does `Lighthouse Redesign Spec` connect `App Shell & PRD` to `Palette Generation & State`?**
+  _High betweenness centrality (0.036) - this node is a cross-community bridge._
+- **Why does `Khaali Colours PRD` connect `Color System & Assets` to `Palette Generation & State`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `Khaali Colours PRD` (e.g. with `Bug: Zero Responsiveness (Hardcoded 60/40 Split)` and `Issue: No Tests Despite vitest Installed`) actually correct?**
   _`Khaali Colours PRD` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Live Preview with Sample Components`, `Planned File Structure`, `Shareable URL with Palette Config (Nice to Have)` to the rest of the system?**
-  _50 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _62 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `App Shell & PRD` be split into smaller, more focused modules?**
+  _Cohesion score 0.06 - nodes in this community are weakly interconnected._
 - **Should `Color System & Assets` be split into smaller, more focused modules?**
-  _Cohesion score 0.08 - nodes in this community are weakly interconnected._
-- **Should `Palette Generation & Sidebar` be split into smaller, more focused modules?**
-  _Cohesion score 0.08 - nodes in this community are weakly interconnected._
-- **Should `App Shell & Layout` be split into smaller, more focused modules?**
-  _Cohesion score 0.12 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07 - nodes in this community are weakly interconnected._
